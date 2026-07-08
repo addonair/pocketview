@@ -10,7 +10,7 @@ import type { Orientation } from '@shared/devices/types';
 import { resolveDevice, getDeviceById } from '@shared/devices/registry';
 import { PreviewPanel } from './PreviewPanel';
 import { ServerDetector } from '../services/ServerDetector';
-import { ScreenshotService } from '../services/ScreenshotService';
+import { ScreenshotService, resolveCaptureUrl } from '../services/ScreenshotService';
 import { StateStore } from '../services/StateStore';
 import { FileWatcher } from '../watchers/FileWatcher';
 import { StatusBarManager } from '../statusbar/StatusBarManager';
@@ -221,18 +221,40 @@ export class PreviewController {
     await vscode.env.openExternal(vscode.Uri.parse(url));
   }
 
+  /**
+   * Ask which page to capture. The capture runs in a fresh headless browser
+   * session, so it cannot see where the user has navigated inside the preview
+   * iframe (cross-origin) — the route must come from the user. Defaults to the
+   * last captured route for this workspace.
+   */
+  private async promptForCaptureUrl(baseUrl: string): Promise<string | undefined> {
+    const input = await vscode.window.showInputBox({
+      title: 'Capture Screenshot',
+      prompt:
+        'Which page should be captured? Enter the route you are viewing (the capture starts a fresh session, so it cannot follow in-app navigation by itself).',
+      value: this.store.getLastShotPath() ?? '/',
+      placeHolder: '/  ·  /login  ·  #/dashboard  ·  full http://… URL',
+    });
+    if (input === undefined) return undefined; // user cancelled
+    const path = input.trim() || '/';
+    await this.store.setLastShotPath(path);
+    return resolveCaptureUrl(baseUrl, path);
+  }
+
   private async captureScreenshot(deviceId: string, orientation: Orientation): Promise<void> {
     const url = this.detector.getStatus().url;
     if (!url) {
       void vscode.window.showWarningMessage('Connect to a dev server before taking a screenshot.');
       return;
     }
+    const captureUrl = await this.promptForCaptureUrl(url);
+    if (!captureUrl) return;
     const device = getDeviceById(deviceId) ?? resolveDevice(deviceId);
     const includeFrame = readConfig().includeFrameInScreenshot;
 
     try {
       await this.screenshots.captureToFile(
-        { device, orientation, url },
+        { device, orientation, url: captureUrl },
         includeFrame
           ? async (screenPng) => {
               // Hand the raw capture to the webview to composite into the frame.

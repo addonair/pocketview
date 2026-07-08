@@ -4,6 +4,7 @@ import type { Orientation } from '@shared/devices/types';
 
 const KEY_UI = 'pocketView.ui';
 const KEY_LAST_SERVER = 'pocketView.lastServer';
+const KEY_LAST_SHOT_PATH = 'pocketView.lastShotPath';
 
 /**
  * Persists UI state (selected device, zoom, orientation, favorites, recents) and
@@ -39,5 +40,14 @@ export class StateStore {
 
   async setLastServer(url: string): Promise<void> {
     await this.ctx.workspaceState.update(KEY_LAST_SERVER, url);
+  }
+
+  /** Route/path last captured in a screenshot, per workspace. */
+  getLastShotPath(): string | undefined {
+    return this.ctx.workspaceState.get<string>(KEY_LAST_SHOT_PATH);
+  }
+
+  async setLastShotPath(path: string): Promise<void> {
+    await this.ctx.workspaceState.update(KEY_LAST_SHOT_PATH, path);
   }
 }

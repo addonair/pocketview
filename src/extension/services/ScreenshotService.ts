@@ -13,6 +13,18 @@ export interface CaptureOptions {
 }
 
 /**
+ * Resolve the user's "which page?" answer against the connected server. Accepts
+ * a full URL, an absolute path (`/login`), a hash route (`#/login`), or a bare
+ * relative path (`login`).
+ */
+export function resolveCaptureUrl(baseUrl: string, input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed || trimmed === '/') return baseUrl;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return new URL(trimmed, `${baseUrl.replace(/\/+$/, '')}/`).href;
+}
+
+/**
  * Captures true app content by driving a headless Chromium-family browser via
  * Playwright. It reuses the user's installed Chrome/Edge (no download, no
  * visible window). The webview later composites the returned PNG into the CSS

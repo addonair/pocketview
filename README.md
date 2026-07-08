@@ -117,11 +117,17 @@ Every step is logged to the **PocketView** output channel for easy diagnosis.
 ## Screenshots & cross-origin honesty
 
 Your app runs in a cross-origin iframe inside the webview, which browsers
-intentionally sandbox — the webview cannot read the iframe's pixels. PocketView
-handles this honestly: screenshots are captured by a **headless (invisible)
-Chromium** — reusing your installed Chrome or Edge — at the device's true
-viewport, pixel ratio, and user agent, then optionally composited into the
-device frame. No browser window ever opens.
+intentionally sandbox — the webview cannot read the iframe's pixels or see
+where you've navigated inside your app. PocketView handles this honestly:
+
+- Screenshots are captured by a **headless (invisible) Chromium** — reusing
+  your installed Chrome or Edge — at the device's true viewport, pixel ratio,
+  and user agent, then optionally composited into the device frame. No browser
+  window ever opens.
+- Because the capture starts a **fresh browser session**, PocketView asks
+  **which page to capture** (e.g. `/login`, `#/dashboard`, or a full URL) and
+  remembers your last answer per workspace. Pages that require you to be
+  logged in will capture as a signed-out visitor would see them.
 
 ## Development
 
