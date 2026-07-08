@@ -1,0 +1,115 @@
+/* Base variables, inheriting VS Code theme tokens so the UI always matches the
+   active color theme (including high-contrast). */
+:root {
+  --dp-gap: 8px;
+  --dp-radius: 8px;
+  --dp-radius-lg: 12px;
+  --dp-toolbar-height: 44px;
+  --dp-statusbar-height: 26px;
+  --dp-accent: var(--vscode-focusBorder, #007acc);
+  --dp-panel-bg: var(--vscode-editor-background, #1e1e1e);
+  --dp-surface: var(--vscode-editorWidget-background, #252526);
+  --dp-surface-hover: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.08));
+  --dp-border: var(--vscode-widget-border, rgba(255, 255, 255, 0.08));
+  --dp-fg: var(--vscode-foreground, #cccccc);
+  --dp-fg-muted: var(--vscode-descriptionForeground, #9d9d9d);
+  --dp-shadow: 0 12px 34px rgba(0, 0, 0, 0.45), 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--vscode-font-family, "Segoe UI", system-ui, sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+  color: var(--dp-fg);
+  background: var(--dp-panel-bg);
+  overflow: hidden;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+.dp-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(255, 255, 255, 0.04), transparent 70%),
+    var(--dp-panel-bg);
+}
+
+.dp-app.is-fullscreen .dp-toolbar,
+.dp-app.is-fullscreen .dp-statusbar {
+  display: none;
+}
+
+/* Icon button used across the toolbar and controls. */
+.dp-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--dp-radius);
+  background: transparent;
+  color: var(--dp-fg);
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    transform 80ms ease;
+}
+
+.dp-iconbtn:hover {
+  background: var(--dp-surface-hover);
+}
+
+.dp-iconbtn:active {
+  transform: scale(0.96);
+}
+
+.dp-iconbtn:focus-visible {
+  outline: none;
+  border-color: var(--dp-accent);
+}
+
+.dp-iconbtn.is-active {
+  background: var(--dp-surface-hover);
+  border-color: var(--dp-border);
+}
+
+.dp-iconbtn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.dp-sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--dp-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

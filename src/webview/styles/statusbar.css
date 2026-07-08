@@ -1,0 +1,59 @@
+.dp-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--dp-statusbar-height);
+  padding: 0 12px;
+  border-top: 1px solid var(--dp-border);
+  background: var(--vscode-statusBar-background, rgba(255, 255, 255, 0.02));
+  font-size: 11px;
+  color: var(--dp-fg-muted);
+  flex-shrink: 0;
+}
+
+.dp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dp-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dp-fg-muted);
+}
+
+.dp-status__dot.is-connected {
+  background: #3fb950;
+  box-shadow: 0 0 6px rgba(63, 185, 80, 0.7);
+}
+
+.dp-status__dot.is-searching {
+  background: #d29922;
+  animation: dp-pulse 1s ease-in-out infinite;
+}
+
+.dp-status__dot.is-disconnected {
+  background: #f85149;
+}
+
+@keyframes dp-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.dp-statusbar__spacer {
+  flex: 1;
+}
+
+.dp-status--link {
+  cursor: pointer;
+  color: var(--dp-fg);
+}
+
+.dp-status--link:hover {
+  text-decoration: underline;
+}

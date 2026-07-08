@@ -1,0 +1,67 @@
+.dp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--dp-toolbar-height);
+  padding: 0 10px;
+  border-bottom: 1px solid var(--dp-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  backdrop-filter: blur(6px);
+  flex-shrink: 0;
+}
+
+.dp-toolbar__spacer {
+  flex: 1;
+}
+
+/* Device selector button showing the current device name. */
+.dp-device-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  max-width: 240px;
+  border: 1px solid var(--dp-border);
+  border-radius: var(--dp-radius);
+  background: var(--dp-surface);
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+.dp-device-select:hover {
+  border-color: var(--dp-accent);
+}
+
+.dp-device-select__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dp-device-select__meta {
+  color: var(--dp-fg-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.dp-zoom {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--dp-border);
+  border-radius: var(--dp-radius);
+  overflow: hidden;
+}
+
+.dp-zoom__value {
+  min-width: 46px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-zoom button {
+  border: none;
+  border-radius: 0;
+  height: 28px;
+}

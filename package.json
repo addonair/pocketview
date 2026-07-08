@@ -1,0 +1,268 @@
+{
+  "name": "pocketview",
+  "displayName": "PocketView",
+  "description": "Your app, in your pocket, inside VS Code. Live mobile & tablet preview in realistic device frames — workspace-aware dev-server detection, rotation, zoom, and pixel-perfect screenshots.",
+  "version": "1.0.0",
+  "publisher": "addonair",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "device",
+    "preview",
+    "responsive",
+    "mobile",
+    "simulator",
+    "iphone",
+    "android",
+    "viewport",
+    "emulator"
+  ],
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/addonair/pocketview"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "pocketView.showPreview",
+        "title": "Show Preview",
+        "category": "PocketView",
+        "icon": "$(device-mobile)"
+      },
+      {
+        "command": "pocketView.refresh",
+        "title": "Refresh",
+        "category": "PocketView",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "pocketView.rotate",
+        "title": "Rotate Device",
+        "category": "PocketView",
+        "icon": "$(screen-normal)"
+      },
+      {
+        "command": "pocketView.nextDevice",
+        "title": "Next Device",
+        "category": "PocketView",
+        "icon": "$(arrow-right)"
+      },
+      {
+        "command": "pocketView.previousDevice",
+        "title": "Previous Device",
+        "category": "PocketView",
+        "icon": "$(arrow-left)"
+      },
+      {
+        "command": "pocketView.captureScreenshot",
+        "title": "Capture Screenshot",
+        "category": "PocketView",
+        "icon": "$(device-camera)"
+      },
+      {
+        "command": "pocketView.connectToUrl",
+        "title": "Connect to URL",
+        "category": "PocketView",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "pocketView.toggleFullscreen",
+        "title": "Toggle Fullscreen",
+        "category": "PocketView",
+        "icon": "$(screen-full)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "pocketView.refresh",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "pocketView.panelFocused"
+      },
+      {
+        "command": "pocketView.rotate",
+        "key": "ctrl+alt+o",
+        "mac": "cmd+alt+o",
+        "when": "pocketView.panelFocused"
+      },
+      {
+        "command": "pocketView.nextDevice",
+        "key": "ctrl+alt+right",
+        "mac": "cmd+alt+right",
+        "when": "pocketView.panelFocused"
+      },
+      {
+        "command": "pocketView.previousDevice",
+        "key": "ctrl+alt+left",
+        "mac": "cmd+alt+left",
+        "when": "pocketView.panelFocused"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "pocketView.refresh",
+          "when": "pocketView.panelActive"
+        },
+        {
+          "command": "pocketView.rotate",
+          "when": "pocketView.panelActive"
+        },
+        {
+          "command": "pocketView.nextDevice",
+          "when": "pocketView.panelActive"
+        },
+        {
+          "command": "pocketView.previousDevice",
+          "when": "pocketView.panelActive"
+        },
+        {
+          "command": "pocketView.captureScreenshot",
+          "when": "pocketView.panelActive"
+        },
+        {
+          "command": "pocketView.toggleFullscreen",
+          "when": "pocketView.panelActive"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "PocketView",
+      "properties": {
+        "pocketView.defaultDevice": {
+          "type": "string",
+          "default": "iphone-15-pro",
+          "description": "The device id shown by default when the preview opens."
+        },
+        "pocketView.defaultZoom": {
+          "type": "string",
+          "enum": [
+            "25",
+            "50",
+            "75",
+            "100",
+            "125",
+            "150",
+            "200",
+            "fit"
+          ],
+          "default": "fit",
+          "description": "Default zoom level for the device preview."
+        },
+        "pocketView.url": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Pin the preview to this exact URL (e.g. http://localhost:5174). Overrides auto-detection — set it in workspace settings to always preview this project's dev server."
+        },
+        "pocketView.autoDetect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect this workspace's running dev server (matches listening ports to processes started from the workspace folder)."
+        },
+        "pocketView.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh the preview when workspace files change."
+        },
+        "pocketView.defaultURL": {
+          "type": "string",
+          "default": "",
+          "description": "Fallback URL to load when no dev server is detected (e.g. http://localhost:3000)."
+        },
+        "pocketView.customPorts": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "default": [],
+          "description": "Additional ports to scan when detecting a dev server."
+        },
+        "pocketView.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the PocketView button in the VS Code status bar."
+        },
+        "pocketView.rememberLastServer": {
+          "type": "boolean",
+          "default": true,
+          "description": "Remember and prefer the last successfully connected server."
+        },
+        "pocketView.defaultOrientation": {
+          "type": "string",
+          "enum": [
+            "portrait",
+            "landscape"
+          ],
+          "default": "portrait",
+          "description": "Default device orientation."
+        },
+        "pocketView.screenshot.includeFrame": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include the full device frame (bezel) in screenshots instead of just the screen."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "npm run build:extension && npm run build:webview",
+    "build:extension": "vite build --config vite.config.extension.ts",
+    "build:webview": "vite build --config vite.config.webview.ts",
+    "watch": "concurrently \"npm run watch:extension\" \"npm run watch:webview\"",
+    "watch:extension": "vite build --watch --config vite.config.extension.ts",
+    "watch:webview": "vite build --watch --config vite.config.webview.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:webview": "vitest run test/webview",
+    "pretest:integration": "npm run build",
+    "test:integration": "node ./test/integration/runTest.js",
+    "vscode:prepublish": "npm run build",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.24",
+    "@types/react": "^18.2.61",
+    "@types/react-dom": "^18.2.19",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^2.24.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "glob": "^10.3.10",
+    "jsdom": "^24.0.0",
+    "mocha": "^10.3.0",
+    "prettier": "^3.2.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.4",
+    "vitest": "^1.3.1"
+  },
+  "dependencies": {
+    "playwright-core": "^1.42.1"
+  }
+}
