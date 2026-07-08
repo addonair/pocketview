@@ -30,6 +30,7 @@ captures pixel-perfect screenshots at real device resolution.
 | ♻️ **Live reload** | Watches your source files and reloads the preview — but defers to your framework's HMR (Vite, Next, Nuxt, webpack) when available |
 | 🔄 **Rotate** | Portrait ⇄ landscape with correct notch and safe-area placement |
 | 🔎 **Zoom** | 25–200% presets, Fit-to-Panel, and Ctrl+wheel / trackpad pinch |
+| 🧭 **Route tracking** | Knows which page you're on inside your app — shown live in the status bar and used as the screenshot default |
 | 📸 **Screenshots** | Captured by an invisible headless Chromium at the device's exact viewport, pixel ratio, and user agent — optionally composited into the device frame |
 | 🎨 **Native feel** | Theme-aware UI, status bar item, keyboard shortcuts, accessible controls |
 
@@ -94,6 +95,7 @@ When the panel is focused:
 | `pocketView.defaultZoom` | `fit` | `25`–`200` (percent) or `fit` |
 | `pocketView.autoDetect` | `true` | Workspace-aware dev-server detection |
 | `pocketView.autoRefresh` | `true` | Reload the preview on file changes |
+| `pocketView.routeTracking` | `true` | Serve the preview through a local helper proxy so PocketView knows which page you're on |
 | `pocketView.defaultURL` | `""` | Fallback URL when nothing is detected |
 | `pocketView.customPorts` | `[]` | Extra ports to consider |
 | `pocketView.rememberLastServer` | `true` | Prefer the last connected server |
@@ -114,20 +116,34 @@ When the panel is focused:
 
 Every step is logged to the **PocketView** output channel for easy diagnosis.
 
+## Route tracking
+
+Your app runs in a cross-origin iframe, which browsers sandbox — the webview
+can't see which page you've navigated to. To fix that, PocketView serves the
+preview through a **tiny local proxy** that forwards everything to your dev
+server (HMR WebSockets included) and injects a one-line reporter into your
+app's HTML. Your app then tells PocketView its current route on every
+navigation — pushState, hash changes, and back/forward all included.
+
+The result: the current route shows live in the status bar (e.g.
+`localhost:5174` **`/login`**), and screenshots default to the exact page
+you're looking at. This is on by default; turn it off with
+`pocketView.routeTracking: false` if your app misbehaves behind the proxy (the
+preview still works — you just lose route awareness).
+
 ## Screenshots & cross-origin honesty
 
-Your app runs in a cross-origin iframe inside the webview, which browsers
-intentionally sandbox — the webview cannot read the iframe's pixels or see
-where you've navigated inside your app. PocketView handles this honestly:
+Screenshots are captured by a **headless (invisible) Chromium** — reusing your
+installed Chrome or Edge — at the device's true viewport, pixel ratio, and user
+agent, then optionally composited into the device frame. No browser window ever
+opens.
 
-- Screenshots are captured by a **headless (invisible) Chromium** — reusing
-  your installed Chrome or Edge — at the device's true viewport, pixel ratio,
-  and user agent, then optionally composited into the device frame. No browser
-  window ever opens.
-- Because the capture starts a **fresh browser session**, PocketView asks
-  **which page to capture** (e.g. `/login`, `#/dashboard`, or a full URL) and
-  remembers your last answer per workspace. Pages that require you to be
-  logged in will capture as a signed-out visitor would see them.
+Because the capture starts a **fresh browser session**, PocketView asks which
+page to capture — but thanks to route tracking, the prompt is **prefilled with
+the page you're currently viewing**, so it's usually just a keystroke to
+confirm. You can also type any route (`/login`, `#/dashboard`) or a full URL.
+Pages that require you to be logged in will capture as a signed-out visitor
+would see them.
 
 ## Development
 

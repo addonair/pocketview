@@ -166,6 +166,11 @@
           "scope": "resource",
           "description": "Pin the preview to this exact URL (e.g. http://localhost:5174). Overrides auto-detection — set it in workspace settings to always preview this project's dev server."
         },
+        "pocketView.routeTracking": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track in-app navigation by serving the preview through a local helper proxy. Lets the status bar and screenshots know which page you are on. Disable if your app misbehaves behind the proxy."
+        },
         "pocketView.autoDetect": {
           "type": "boolean",
           "default": true,

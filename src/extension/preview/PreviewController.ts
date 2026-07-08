@@ -11,6 +11,7 @@ import { resolveDevice, getDeviceById } from '@shared/devices/registry';
 import { PreviewPanel } from './PreviewPanel';
 import { ServerDetector } from '../services/ServerDetector';
 import { ScreenshotService, resolveCaptureUrl } from '../services/ScreenshotService';
+import { PreviewProxy } from '../services/PreviewProxy';
 import { StateStore } from '../services/StateStore';
 import { FileWatcher } from '../watchers/FileWatcher';
 import { StatusBarManager } from '../statusbar/StatusBarManager';
@@ -39,12 +40,17 @@ export class PreviewController {
   private readonly detector: ServerDetector;
   private readonly screenshots: ScreenshotService;
   private readonly watcher: FileWatcher;
+  private readonly proxy: PreviewProxy;
   private panel: PreviewPanel | undefined;
 
   /** Device id last reported by the webview, used for command-driven captures. */
   private lastDeviceId: string;
   private lastOrientation: Orientation;
   private pendingScreenshotDevice: string | undefined;
+  /** Latest status enriched with the proxy previewUrl (what the iframe loads). */
+  private enrichedStatus: ServerStatus | undefined;
+  /** Route the user is currently on inside the app (from the proxy reporter). */
+  private currentRoute: string | undefined;
 
   constructor(
     private readonly ctx: vscode.ExtensionContext,
@@ -55,15 +61,17 @@ export class PreviewController {
     this.detector = new ServerDetector(store, log);
     this.screenshots = new ScreenshotService(log);
     this.watcher = new FileWatcher(() => this.handleFileChange(), log);
+    this.proxy = new PreviewProxy(log);
 
     const ui = store.getUiState();
     this.lastDeviceId = ui.deviceId;
     this.lastOrientation = ui.orientation;
 
     ctx.subscriptions.push(
-      this.detector.onDidChangeStatus((status) => this.onStatusChanged(status)),
+      this.detector.onDidChangeStatus((status) => void this.onStatusChanged(status)),
       this.detector,
       this.watcher,
+      this.proxy,
       { dispose: () => void this.screenshots.dispose() },
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration('pocketView')) this.onConfigChanged();
@@ -91,13 +99,25 @@ export class PreviewController {
     void this.detector.detect();
   }
 
-  private onStatusChanged(status: ServerStatus): void {
+  private async onStatusChanged(status: ServerStatus): Promise<void> {
+    let previewUrl = status.url ?? undefined;
+    if (status.state === 'connected' && status.url) {
+      const tracking = vscode.workspace
+        .getConfiguration('pocketView')
+        .get<boolean>('routeTracking', true);
+      previewUrl = await this.proxy.ensure(status.url, tracking);
+    } else {
+      this.proxy.stop();
+    }
+    this.currentRoute = undefined; // route belongs to the previous server
+    this.enrichedStatus = { ...status, previewUrl };
+
     this.statusBar.update(status);
     // Surface the resolved URL in the tab title so a mismatch is obvious.
     const host =
       status.state === 'connected' && status.url ? status.url.replace(/^https?:\/\//, '') : null;
     this.panel?.setTitle(host ? `PocketView — ${host}` : 'PocketView');
-    this.panel?.post({ type: 'serverStatus', status });
+    this.panel?.post({ type: 'serverStatus', status: this.enrichedStatus });
   }
 
   private onConfigChanged(): void {
@@ -141,6 +161,9 @@ export class PreviewController {
         this.lastOrientation = msg.state.orientation;
         await this.store.setUiState(msg.state);
         break;
+      case 'routeChanged':
+        this.currentRoute = msg.route;
+        break;
       case 'setContext':
         await vscode.commands.executeCommand(
           'setContext',
@@ -160,7 +183,7 @@ export class PreviewController {
       type: 'init',
       config: readConfig(),
       state: this.store.getUiState(),
-      status: this.detector.getStatus(),
+      status: this.enrichedStatus ?? this.detector.getStatus(),
     };
     this.panel.post(init);
   }
@@ -222,17 +245,19 @@ export class PreviewController {
   }
 
   /**
-   * Ask which page to capture. The capture runs in a fresh headless browser
-   * session, so it cannot see where the user has navigated inside the preview
-   * iframe (cross-origin) — the route must come from the user. Defaults to the
-   * last captured route for this workspace.
+   * Ask which page to capture, prefilled with the route the user is currently
+   * on (reported live by the proxy's route tracker) — so the default is simply
+   * "what I'm looking at" and Enter confirms it. Falls back to the last
+   * captured route when tracking is unavailable.
    */
   private async promptForCaptureUrl(baseUrl: string): Promise<string | undefined> {
+    const current = this.currentRoute;
     const input = await vscode.window.showInputBox({
       title: 'Capture Screenshot',
-      prompt:
-        'Which page should be captured? Enter the route you are viewing (the capture starts a fresh session, so it cannot follow in-app navigation by itself).',
-      value: this.store.getLastShotPath() ?? '/',
+      prompt: current
+        ? 'Press Enter to capture the page you are viewing, or type another route.'
+        : 'Which page should be captured? (e.g. /login — the capture runs in a fresh session)',
+      value: current ?? this.store.getLastShotPath() ?? '/',
       placeHolder: '/  ·  /login  ·  #/dashboard  ·  full http://… URL',
     });
     if (input === undefined) return undefined; // user cancelled

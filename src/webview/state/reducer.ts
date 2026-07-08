@@ -16,6 +16,8 @@ export interface UiState {
   loading: boolean;
   error: string | null;
   lastRefresh: number | null;
+  /** Route the user is on inside the app (from the proxy's route reporter). */
+  route: string | null;
   /** Bumped to force an iframe reload without changing the URL. */
   reloadNonce: number;
 }
@@ -39,6 +41,7 @@ export const initialState: UiState = {
   loading: false,
   error: null,
   lastRefresh: null,
+  route: null,
   reloadNonce: 0,
 };
 
@@ -55,6 +58,7 @@ export type Action =
   | { type: 'toggleFavorite'; deviceId: string }
   | { type: 'setLoading'; loading: boolean }
   | { type: 'setError'; error: string | null }
+  | { type: 'setRoute'; route: string }
   | { type: 'reload' }
   | { type: 'fileChanged'; at: number };
 
@@ -91,7 +95,13 @@ export function reducer(state: UiState, action: Action): UiState {
     case 'applyConfig':
       return { ...state, config: action.config };
     case 'status':
-      return { ...state, status: action.status, error: null };
+      return {
+        ...state,
+        status: action.status,
+        error: null,
+        // A different server means the tracked route no longer applies.
+        route: action.status.url === state.status.url ? state.route : null,
+      };
     case 'selectDevice': {
       const device = resolveDevice(action.deviceId);
       const orientation = device.orientations.includes(state.orientation)
@@ -136,6 +146,8 @@ export function reducer(state: UiState, action: Action): UiState {
       return { ...state, loading: action.loading };
     case 'setError':
       return { ...state, error: action.error, loading: false };
+    case 'setRoute':
+      return { ...state, route: action.route };
     case 'reload':
       return { ...state, reloadNonce: state.reloadNonce + 1, loading: true };
     case 'fileChanged':

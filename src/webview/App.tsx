@@ -92,6 +92,20 @@ export function App() {
     post({ type: 'persistState', state: toPersisted(stateRef.current) });
   }, [state.deviceId, state.orientation, state.zoom, state.favorites, state.recents, post]);
 
+  // The proxy injects a reporter into the app that posts its route on every
+  // navigation; relay it into UI state and to the host (screenshot default).
+  useEffect(() => {
+    const onRoute = (event: MessageEvent) => {
+      const data = event.data as { pocketViewRoute?: unknown } | null;
+      if (data && typeof data.pocketViewRoute === 'string') {
+        dispatch({ type: 'setRoute', route: data.pocketViewRoute });
+        post({ type: 'routeChanged', route: data.pocketViewRoute });
+      }
+    };
+    window.addEventListener('message', onRoute);
+    return () => window.removeEventListener('message', onRoute);
+  }, [post]);
+
   // Track focus so the host can scope keybindings to the panel.
   useEffect(() => {
     const onFocus = () => post({ type: 'setContext', focused: true });
@@ -199,6 +213,7 @@ export function App() {
 
       <StatusBar
         status={state.status}
+        route={state.route}
         autoRefresh={state.config.autoRefresh}
         lastRefresh={state.lastRefresh}
         onOpenBrowser={onOpenBrowser}

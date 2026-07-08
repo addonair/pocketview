@@ -2,6 +2,7 @@ import type { ServerStatus } from '@shared/protocol';
 
 interface StatusBarProps {
   status: ServerStatus;
+  route: string | null;
   autoRefresh: boolean;
   lastRefresh: number | null;
   onOpenBrowser: () => void;
@@ -22,7 +23,7 @@ function timeAgo(ts: number): string {
 }
 
 /** Bottom status bar mirroring the connection state, server URL and activity. */
-export function StatusBar({ status, autoRefresh, lastRefresh, onOpenBrowser }: StatusBarProps) {
+export function StatusBar({ status, route, autoRefresh, lastRefresh, onOpenBrowser }: StatusBarProps) {
   return (
     <div className="dp-statusbar" role="status" aria-live="polite">
       <span className="dp-status" title={status.detail}>
@@ -33,6 +34,7 @@ export function StatusBar({ status, autoRefresh, lastRefresh, onOpenBrowser }: S
       {status.url && (
         <span className="dp-status dp-status--link" onClick={onOpenBrowser} title="Open in browser">
           {status.url.replace(/^https?:\/\//, '')}
+          {route && route !== '/' ? <strong>{route}</strong> : null}
         </span>
       )}
 

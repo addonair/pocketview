@@ -35,6 +35,11 @@ export interface ServerStatus {
   hmr: boolean;
   /** Human-readable note on how this server was chosen (or why none was). */
   detail?: string;
+  /**
+   * URL the iframe should load — the route-tracking proxy when active,
+   * otherwise the same as {@link url}.
+   */
+  previewUrl?: string;
 }
 
 /** Messages sent from the extension host to the webview. */
@@ -62,5 +67,6 @@ export type WebviewToHost =
   | { type: 'captureScreenshot'; deviceId: string; orientation: Orientation }
   | { type: 'compositeScreenshot'; pngBase64: string }
   | { type: 'persistState'; state: PersistedState }
+  | { type: 'routeChanged'; route: string }
   | { type: 'setContext'; focused: boolean }
   | { type: 'log'; level: 'info' | 'warn' | 'error'; message: string };

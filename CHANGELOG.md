@@ -18,6 +18,11 @@ First public release, as **PocketView** (formerly "Device Preview").
   folder are used — running several projects at once never previews the wrong
   app. Most recently started server wins; full accept/reject diagnostics in
   the PocketView output channel.
+- **Route tracking**: the preview is served through a local helper proxy that
+  forwards to the dev server (HMR WebSockets included) and injects a route
+  reporter, so PocketView knows which page you're on. The current route shows
+  in the status bar, and the Capture Screenshot prompt is prefilled with the
+  page you're viewing. Toggle with `pocketView.routeTracking`.
 - `pocketView.url` setting to pin the preview to an exact URL per workspace.
 - File watching with debounced refresh and an HMR-vs-reload heuristic that
   defers to Vite / Next / Nuxt when detected.

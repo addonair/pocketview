@@ -99,7 +99,7 @@ export function DeviceStage(props: DeviceStageProps) {
             ref={screenRef}
             device={device}
             orientation={orientation}
-            url={connected ? status.url : null}
+            url={connected ? (status.previewUrl ?? status.url) : null}
             reloadNonce={reloadNonce}
             onLoad={onIframeLoad}
             onError={onIframeError}
