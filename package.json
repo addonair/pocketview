@@ -2,7 +2,7 @@
   "name": "pocketview",
   "displayName": "PocketView",
   "description": "Your app, in your pocket, inside VS Code. Live mobile & tablet preview in realistic device frames — workspace-aware dev-server detection, rotation, zoom, and pixel-perfect screenshots.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "addonair",
   "license": "MIT",
   "engines": {
