@@ -75,3 +75,27 @@ export const ZoomOutIcon = (p: IconProps) => (
     <path d="M8 10h8v2H8z" />
   </svg>
 );
+
+export const SettingsIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M19.4 13a7.8 7.8 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.7 7.7 0 0 0-1.7-1l-.3-2.5H10.9l-.4 2.6a7.7 7.7 0 0 0-1.7 1l-2.4-1-2 3.4L4.6 11a7.8 7.8 0 0 0 0 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.8 1.7 1l.4 2.5h4.2l.4-2.6c.6-.2 1.2-.5 1.7-1l2.4 1 2-3.4-2-1.5zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" />
+  </svg>
+);
+
+export const FrameIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M17 1H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm0 18H7V5h10v14z" />
+  </svg>
+);
+
+export const SafeAreaIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v10H7V7z" opacity="0.9" />
+  </svg>
+);
+
+export const CloseIcon = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M18.3 5.7l-1.4-1.4L12 9.2 7.1 4.3 5.7 5.7 10.6 12l-4.9 4.9 1.4 1.4L12 13.4l4.9 4.9 1.4-1.4L13.4 12z" />
+  </svg>
+);

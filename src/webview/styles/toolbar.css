@@ -14,6 +14,17 @@
   flex: 1;
 }
 
+/* Visually grouped cluster of icon buttons. */
+.dp-segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--dp-radius);
+  background: var(--vscode-editor-background, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--dp-border);
+}
+
 /* Device selector button showing the current device name. */
 .dp-device-select {
   display: inline-flex;

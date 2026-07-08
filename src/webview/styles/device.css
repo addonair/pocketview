@@ -41,6 +41,12 @@
     border-radius 300ms ease;
 }
 
+/* Frameless mode: no device body, just the screen with a soft shadow. */
+.dp-device.is-frameless {
+  background: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
 .dp-device__screen {
   position: absolute;
   overflow: hidden;
@@ -129,6 +135,23 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+}
+
+/* Scale/device readout badge, floated in the stage corner. */
+.dp-scale-badge {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--dp-fg-muted);
+  background: color-mix(in srgb, var(--dp-panel-bg) 78%, transparent);
+  border: 1px solid var(--dp-border);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  z-index: 4;
 }
 
 /* Loading + error overlays. */

@@ -15,6 +15,9 @@ function setup(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}) {
     onOpenBrowser: vi.fn(),
     onConnectUrl: vi.fn(),
     onScreenshot: vi.fn(),
+    onToggleFrame: vi.fn(),
+    onToggleSafeArea: vi.fn(),
+    onOpenSettings: vi.fn(),
     onToggleFullscreen: vi.fn(),
   };
   render(
@@ -23,6 +26,8 @@ function setup(overrides: Partial<Parameters<typeof Toolbar>[0]> = {}) {
       orientation="portrait"
       zoom="fit"
       canRotate
+      showFrame
+      showSafeArea={false}
       {...handlers}
       {...overrides}
     />,

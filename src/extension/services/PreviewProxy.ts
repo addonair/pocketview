@@ -4,27 +4,65 @@ import type { Duplex } from 'node:stream';
 import type { Logger } from '../utils/logger';
 
 /**
- * Route reporter injected into the app's HTML. Runs inside the preview iframe
- * (the app's own origin, via the proxy) and posts the current route to the
- * webview parent whenever it changes — SPA pushState/replaceState, back/forward,
- * and hash navigation included. The interval is a safety net for frameworks
- * that navigate without touching history APIs.
+ * Agent injected into the app's HTML. Runs inside the preview iframe (the app's
+ * own origin, via the proxy) and does two jobs:
+ *
+ * 1. **Route reporting** — posts the current route to the webview parent whenever
+ *    it changes (SPA pushState/replaceState, back/forward, hash navigation). The
+ *    interval is a safety net for frameworks that navigate without touching
+ *    history APIs.
+ * 2. **System simulation** — listens for `{ pocketViewSettings }` messages from
+ *    the webview and forces a color scheme, root text scale, and text direction,
+ *    approximating a device's environment the way device_preview does.
+ *
+ * The color-scheme override patches `matchMedia('(prefers-color-scheme…)')` and
+ * toggles `color-scheme` / `.dark` / `[data-theme]` on `<html>`, so it drives
+ * JS-based theming (matchMedia listeners, Tailwind's class strategy) and native
+ * form-control/scrollbar theming. Pure CSS `@media (prefers-color-scheme)` rules
+ * cannot be emulated from inside the page — that needs browser-level media
+ * emulation this proxy has no access to.
  */
-const ROUTE_SCRIPT =
-  '<script>(function(){var l=null;function r(){try{var h=location.pathname+location.search+location.hash;' +
+const AGENT_SCRIPT =
+  '<script>(function(){' +
+  // --- route reporter -------------------------------------------------------
+  'var l=null;function r(){try{var h=location.pathname+location.search+location.hash;' +
   'if(h!==l){l=h;parent.postMessage({pocketViewRoute:h},"*");}}catch(e){}}' +
   'var p=history.pushState;history.pushState=function(){var v=p.apply(this,arguments);r();return v};' +
   'var q=history.replaceState;history.replaceState=function(){var v=q.apply(this,arguments);r();return v};' +
-  'addEventListener("popstate",r);addEventListener("hashchange",r);setInterval(r,800);r();})();</script>';
+  'addEventListener("popstate",r);addEventListener("hashchange",r);setInterval(r,800);r();' +
+  // --- system simulation ----------------------------------------------------
+  'var de=document.documentElement;var origDir=de&&de.getAttribute("dir");' +
+  'var forced=null,mqls=[],nMM=window.matchMedia&&window.matchMedia.bind(window);' +
+  'function sm(qy){var wd=/dark/.test(qy);if(forced==="dark")return wd;if(forced==="light")return !wd;return nMM?nMM(qy).matches:false;}' +
+  'if(nMM){window.matchMedia=function(qy){if(!/prefers-color-scheme/.test(qy))return nMM(qy);' +
+  'var ls=[];var m={media:qy,get matches(){return sm(qy);},onchange:null,' +
+  'addEventListener:function(t,cb){if(t==="change")ls.push(cb);},' +
+  'removeEventListener:function(t,cb){if(t==="change")ls=ls.filter(function(x){return x!==cb;});},' +
+  'addListener:function(cb){ls.push(cb);},removeListener:function(cb){ls=ls.filter(function(x){return x!==cb;});},' +
+  'dispatchEvent:function(){return true;},' +
+  '__n:function(){var ev={matches:sm(qy),media:qy};if(typeof m.onchange==="function")m.onchange(ev);' +
+  'ls.slice().forEach(function(cb){try{cb(ev);}catch(e){}});}};mqls.push(m);return m;};}' +
+  'function aTheme(mode){forced=(mode==="light"||mode==="dark")?mode:null;if(de){' +
+  'if(forced){de.style.colorScheme=forced;de.setAttribute("data-theme",forced);' +
+  'de.classList.toggle("dark",forced==="dark");de.classList.toggle("light",forced==="light");}' +
+  'else{de.style.colorScheme="";de.removeAttribute("data-theme");de.classList.remove("dark");de.classList.remove("light");}}' +
+  'mqls.forEach(function(m){try{m.__n();}catch(e){}});}' +
+  'function aScale(s){if(de)de.style.fontSize=(s&&s!==1)?(s*100)+"%":"";}' +
+  'function aDir(d){if(!de)return;if(d==="rtl")de.setAttribute("dir","rtl");' +
+  'else if(origDir)de.setAttribute("dir",origDir);else de.removeAttribute("dir");}' +
+  'var last=null;function apply(s){last=s;aTheme(s.theme);aScale(s.textScale);aDir(s.direction);}' +
+  'addEventListener("message",function(e){var d=e.data;if(d&&d.pocketViewSettings)apply(d.pocketViewSettings);});' +
+  'document.addEventListener("DOMContentLoaded",function(){if(last)apply(last);});' +
+  '})();</script>';
 
-/** Insert the route reporter right after <head …> (or prepend when headless). */
+/** Insert the agent right after <head …> (or prepend when headless). */
 export function injectRouteScript(html: string): string {
   const at = html.search(/<head[^>]*>/i);
   if (at !== -1) {
     const end = html.indexOf('>', at) + 1;
-    return html.slice(0, end) + ROUTE_SCRIPT + html.slice(end);
+    return html.slice(0, end) + AGENT_SCRIPT + html.slice(end);
   }
-  return ROUTE_SCRIPT + html;
+  return AGENT_SCRIPT + html;
 }
 
 /**

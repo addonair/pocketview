@@ -7,6 +7,7 @@ import { compositeDeviceFrame } from './screenshotComposite';
 import { Toolbar } from './components/Toolbar';
 import { DeviceStage } from './components/DeviceStage';
 import { DevicePicker } from './components/DevicePicker';
+import { SettingsPanel } from './components/SettingsPanel';
 import { StatusBar } from './components/StatusBar';
 
 /** Extract the persisted slice of the UI state. */
@@ -17,6 +18,9 @@ function toPersisted(state: UiState): PersistedState {
     orientation: state.orientation,
     favorites: state.favorites,
     recents: state.recents,
+    showFrame: state.showFrame,
+    showSafeArea: state.showSafeArea,
+    system: state.system,
   };
 }
 
@@ -90,7 +94,17 @@ export function App() {
   useEffect(() => {
     if (!initializedRef.current) return;
     post({ type: 'persistState', state: toPersisted(stateRef.current) });
-  }, [state.deviceId, state.orientation, state.zoom, state.favorites, state.recents, post]);
+  }, [
+    state.deviceId,
+    state.orientation,
+    state.zoom,
+    state.favorites,
+    state.recents,
+    state.showFrame,
+    state.showSafeArea,
+    state.system,
+    post,
+  ]);
 
   // The proxy injects a reporter into the app that posts its route on every
   // navigation; relay it into UI state and to the host (screenshot default).
@@ -185,6 +199,8 @@ export function App() {
         orientation={state.orientation}
         zoom={state.zoom}
         canRotate={device.orientations.length > 1}
+        showFrame={state.showFrame}
+        showSafeArea={state.showSafeArea}
         onOpenPicker={() => dispatch({ type: 'setPicker', open: true })}
         onRotate={() => dispatch({ type: 'rotate' })}
         onRefresh={() => dispatch({ type: 'reload' })}
@@ -193,6 +209,9 @@ export function App() {
         onOpenBrowser={onOpenBrowser}
         onConnectUrl={onConnectUrl}
         onScreenshot={beginScreenshot}
+        onToggleFrame={() => dispatch({ type: 'toggleFrame' })}
+        onToggleSafeArea={() => dispatch({ type: 'toggleSafeArea' })}
+        onOpenSettings={() => dispatch({ type: 'setSettings', open: true })}
         onToggleFullscreen={() => dispatch({ type: 'toggleFullscreen' })}
       />
 
@@ -204,6 +223,9 @@ export function App() {
         loading={state.loading}
         error={state.error}
         reloadNonce={state.reloadNonce}
+        showFrame={state.showFrame}
+        showSafeArea={state.showSafeArea}
+        system={state.system}
         screenRef={screenRef}
         onIframeLoad={() => dispatch({ type: 'setLoading', loading: false })}
         onIframeError={() => dispatch({ type: 'setError', error: 'The page could not be displayed.' })}
@@ -227,6 +249,21 @@ export function App() {
           onSelect={(id) => dispatch({ type: 'selectDevice', deviceId: id })}
           onToggleFavorite={(id) => dispatch({ type: 'toggleFavorite', deviceId: id })}
           onClose={() => dispatch({ type: 'setPicker', open: false })}
+        />
+      )}
+
+      {state.settingsOpen && (
+        <SettingsPanel
+          system={state.system}
+          showFrame={state.showFrame}
+          showSafeArea={state.showSafeArea}
+          onTheme={(theme) => dispatch({ type: 'setTheme', theme })}
+          onTextScale={(scale) => dispatch({ type: 'setTextScale', scale })}
+          onDirection={(direction) => dispatch({ type: 'setDirection', direction })}
+          onToggleFrame={() => dispatch({ type: 'toggleFrame' })}
+          onToggleSafeArea={() => dispatch({ type: 'toggleSafeArea' })}
+          onReset={() => dispatch({ type: 'resetSystem' })}
+          onClose={() => dispatch({ type: 'setSettings', open: false })}
         />
       )}
     </div>

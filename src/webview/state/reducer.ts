@@ -1,6 +1,18 @@
-import type { PreviewConfig, PersistedState, ServerStatus, ZoomLevel } from '@shared/protocol';
+import {
+  DEFAULT_SYSTEM_SETTINGS,
+  type PreviewConfig,
+  type PersistedState,
+  type ServerStatus,
+  type SystemSettings,
+  type ThemeMode,
+  type TextDirection,
+  type ZoomLevel,
+} from '@shared/protocol';
 import type { Orientation } from '@shared/devices/types';
 import { DEVICES, resolveDevice } from '@shared/devices/registry';
+
+/** Clamp helper for the text-scale slider. */
+export const TEXT_SCALE_RANGE = { min: 0.85, max: 1.5, step: 0.05 } as const;
 
 /** Complete webview UI state. */
 export interface UiState {
@@ -13,6 +25,14 @@ export interface UiState {
   recents: string[];
   fullscreen: boolean;
   pickerOpen: boolean;
+  /** Whether the system-settings panel is open. */
+  settingsOpen: boolean;
+  /** Whether the device bezel/chrome is drawn (false = frameless screen). */
+  showFrame: boolean;
+  /** Whether the safe-area guide overlay is shown. */
+  showSafeArea: boolean;
+  /** Simulated system environment applied to the previewed app. */
+  system: SystemSettings;
   loading: boolean;
   error: string | null;
   lastRefresh: number | null;
@@ -38,6 +58,10 @@ export const initialState: UiState = {
   recents: [],
   fullscreen: false,
   pickerOpen: false,
+  settingsOpen: false,
+  showFrame: true,
+  showSafeArea: false,
+  system: DEFAULT_SYSTEM_SETTINGS,
   loading: false,
   error: null,
   lastRefresh: null,
@@ -55,6 +79,13 @@ export type Action =
   | { type: 'setZoom'; zoom: ZoomLevel }
   | { type: 'toggleFullscreen' }
   | { type: 'setPicker'; open: boolean }
+  | { type: 'setSettings'; open: boolean }
+  | { type: 'toggleFrame' }
+  | { type: 'toggleSafeArea' }
+  | { type: 'setTheme'; theme: ThemeMode }
+  | { type: 'setTextScale'; scale: number }
+  | { type: 'setDirection'; direction: TextDirection }
+  | { type: 'resetSystem' }
   | { type: 'toggleFavorite'; deviceId: string }
   | { type: 'setLoading'; loading: boolean }
   | { type: 'setError'; error: string | null }
@@ -90,6 +121,9 @@ export function reducer(state: UiState, action: Action): UiState {
         zoom: action.state.zoom ?? action.config.defaultZoom,
         favorites: action.state.favorites ?? [],
         recents: action.state.recents ?? [],
+        showFrame: action.state.showFrame ?? true,
+        showSafeArea: action.state.showSafeArea ?? false,
+        system: { ...DEFAULT_SYSTEM_SETTINGS, ...(action.state.system ?? {}) },
       };
     }
     case 'applyConfig':
@@ -133,6 +167,25 @@ export function reducer(state: UiState, action: Action): UiState {
       return { ...state, fullscreen: !state.fullscreen };
     case 'setPicker':
       return { ...state, pickerOpen: action.open };
+    case 'setSettings':
+      return { ...state, settingsOpen: action.open };
+    case 'toggleFrame':
+      return { ...state, showFrame: !state.showFrame };
+    case 'toggleSafeArea':
+      return { ...state, showSafeArea: !state.showSafeArea };
+    case 'setTheme':
+      return { ...state, system: { ...state.system, theme: action.theme } };
+    case 'setTextScale': {
+      const scale = Math.min(
+        TEXT_SCALE_RANGE.max,
+        Math.max(TEXT_SCALE_RANGE.min, Math.round(action.scale * 100) / 100),
+      );
+      return { ...state, system: { ...state.system, textScale: scale } };
+    }
+    case 'setDirection':
+      return { ...state, system: { ...state.system, direction: action.direction } };
+    case 'resetSystem':
+      return { ...state, system: DEFAULT_SYSTEM_SETTINGS };
     case 'toggleFavorite': {
       const has = state.favorites.includes(action.deviceId);
       return {

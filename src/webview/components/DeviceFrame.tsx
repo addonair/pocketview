@@ -1,5 +1,6 @@
-import { forwardRef, type CSSProperties } from 'react';
+import { forwardRef, useCallback, useEffect, useRef, type CSSProperties } from 'react';
 import type { Device, Orientation } from '@shared/devices/types';
+import type { SystemSettings } from '@shared/protocol';
 import { screenSize } from '../deviceGeometry';
 
 interface DeviceFrameProps {
@@ -7,6 +8,12 @@ interface DeviceFrameProps {
   orientation: Orientation;
   url: string | null;
   reloadNonce: number;
+  /** Draw the physical body (bezel, buttons); false renders a frameless screen. */
+  chrome: boolean;
+  /** Show the safe-area guide overlay. */
+  showSafeArea: boolean;
+  /** Simulated system environment pushed into the app via the proxy agent. */
+  system: SystemSettings;
   onLoad: () => void;
   onError: () => void;
 }
@@ -18,11 +25,11 @@ interface DeviceFrameProps {
  * the screen area. No per-device code — everything derives from the data object.
  */
 export const DeviceFrame = forwardRef<HTMLDivElement, DeviceFrameProps>(function DeviceFrame(
-  { device, orientation, url, reloadNonce, onLoad, onError },
+  { device, orientation, url, reloadNonce, chrome, showSafeArea, system, onLoad, onError },
   screenRef,
 ) {
   const screen = screenSize(device, orientation);
-  const bezel = device.bezel;
+  const bezel = chrome ? device.bezel : 0;
   const outerW = screen.width + bezel * 2;
   const outerH = screen.height + bezel * 2;
   const landscape = orientation === 'landscape';
@@ -32,20 +39,36 @@ export const DeviceFrame = forwardRef<HTMLDivElement, DeviceFrameProps>(function
   const notch = device.notch;
   const insets = device.safeAreaInsets;
 
+  // Push the current system simulation into the app. The proxy-injected agent
+  // listens for these messages; without the proxy (direct connection) they are
+  // harmlessly ignored. Re-sent on every load so a reloaded app re-applies.
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const postSettings = useCallback(() => {
+    iframeRef.current?.contentWindow?.postMessage({ pocketViewSettings: system }, '*');
+  }, [system]);
+  const handleLoad = () => {
+    postSettings();
+    onLoad();
+  };
+  // Settings changed while the app is already loaded — apply without a reload.
+  useEffect(() => {
+    postSettings();
+  }, [postSettings]);
+
   return (
     <div
-      className="dp-device"
+      className={`dp-device ${chrome ? '' : 'is-frameless'} ${showSafeArea ? 'show-safe' : ''}`}
       style={{
         width: outerW,
         height: outerH,
-        borderRadius: device.cornerRadius + bezel,
+        borderRadius: chrome ? device.cornerRadius + bezel : device.cornerRadius,
         padding: bezel,
       }}
       role="img"
       aria-label={`${device.name} frame, ${orientation}`}
     >
-      {/* Hardware buttons */}
-      {device.hardwareButtons.map((btn, i) => {
+      {/* Hardware buttons (chrome only) */}
+      {chrome && device.hardwareButtons.map((btn, i) => {
         const along = btn.side === 'left' || btn.side === 'right' ? outerH : outerW;
         const thickness = 3;
         const style: CSSProperties =
@@ -76,7 +99,7 @@ export const DeviceFrame = forwardRef<HTMLDivElement, DeviceFrameProps>(function
       >
         {/* Notch / island / punch-hole. Rotation is counter-clockwise, so the
             portrait top edge (where these live) becomes the left edge. */}
-        {notch.type !== 'none' && (
+        {chrome && notch.type !== 'none' && (
           <span
             className={`dp-notch ${notch.type === 'island' ? 'dp-notch--island' : ''}`}
             style={
@@ -114,17 +137,18 @@ export const DeviceFrame = forwardRef<HTMLDivElement, DeviceFrameProps>(function
         {url ? (
           <iframe
             key={reloadNonce}
+            ref={iframeRef}
             title={`${device.name} preview`}
             src={url}
-            onLoad={onLoad}
+            onLoad={handleLoad}
             onError={onError}
             sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-modals allow-downloads"
             allow="accelerometer; camera; microphone; geolocation; clipboard-read; clipboard-write"
           />
         ) : null}
 
-        {/* Home indicator for gesture-nav devices */}
-        {device.navBarHeight > 0 && (
+        {/* Home indicator for gesture-nav devices (chrome only) */}
+        {chrome && device.navBarHeight > 0 && (
           <span
             className="dp-home-indicator"
             style={{ bottom: 8, width: Math.min(140, screen.width * 0.35), height: 5 }}

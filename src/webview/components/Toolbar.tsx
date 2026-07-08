@@ -5,10 +5,13 @@ import {
   BrowserIcon,
   CameraIcon,
   ChevronDownIcon,
+  FrameIcon,
   FullscreenIcon,
   PlugIcon,
   RefreshIcon,
   RotateIcon,
+  SafeAreaIcon,
+  SettingsIcon,
 } from './icons';
 
 interface ToolbarProps {
@@ -16,6 +19,8 @@ interface ToolbarProps {
   orientation: string;
   zoom: ZoomLevel;
   canRotate: boolean;
+  showFrame: boolean;
+  showSafeArea: boolean;
   onOpenPicker: () => void;
   onRotate: () => void;
   onRefresh: () => void;
@@ -24,6 +29,9 @@ interface ToolbarProps {
   onOpenBrowser: () => void;
   onConnectUrl: () => void;
   onScreenshot: () => void;
+  onToggleFrame: () => void;
+  onToggleSafeArea: () => void;
+  onOpenSettings: () => void;
   onToggleFullscreen: () => void;
 }
 
@@ -48,26 +56,64 @@ export function Toolbar(props: ToolbarProps) {
 
       <span className="dp-sep" />
 
-      <button
-        className="dp-iconbtn"
-        onClick={props.onRotate}
-        disabled={!props.canRotate}
-        aria-label="Rotate device"
-        title="Rotate"
-      >
-        <RotateIcon />
-      </button>
-      <button className="dp-iconbtn" onClick={props.onRefresh} aria-label="Refresh preview" title="Refresh">
-        <RefreshIcon />
-      </button>
-      <button
-        className="dp-iconbtn"
-        onClick={props.onReconnect}
-        aria-label="Reconnect to dev server"
-        title="Reconnect"
-      >
-        <PlugIcon />
-      </button>
+      <div className="dp-segment">
+        <button
+          className="dp-iconbtn"
+          onClick={props.onRotate}
+          disabled={!props.canRotate}
+          aria-label="Rotate device"
+          title="Rotate"
+        >
+          <RotateIcon />
+        </button>
+        <button
+          className="dp-iconbtn"
+          onClick={props.onRefresh}
+          aria-label="Refresh preview"
+          title="Refresh"
+        >
+          <RefreshIcon />
+        </button>
+        <button
+          className="dp-iconbtn"
+          onClick={props.onReconnect}
+          aria-label="Reconnect to dev server"
+          title="Reconnect"
+        >
+          <PlugIcon />
+        </button>
+      </div>
+
+      <span className="dp-sep" />
+
+      <div className="dp-segment">
+        <button
+          className={`dp-iconbtn ${props.showFrame ? 'is-active' : ''}`}
+          onClick={props.onToggleFrame}
+          aria-pressed={props.showFrame}
+          aria-label="Toggle device frame"
+          title={props.showFrame ? 'Hide device frame' : 'Show device frame'}
+        >
+          <FrameIcon />
+        </button>
+        <button
+          className={`dp-iconbtn ${props.showSafeArea ? 'is-active' : ''}`}
+          onClick={props.onToggleSafeArea}
+          aria-pressed={props.showSafeArea}
+          aria-label="Toggle safe-area guides"
+          title={props.showSafeArea ? 'Hide safe-area guides' : 'Show safe-area guides'}
+        >
+          <SafeAreaIcon />
+        </button>
+        <button
+          className="dp-iconbtn"
+          onClick={props.onOpenSettings}
+          aria-label="System settings"
+          title="System settings"
+        >
+          <SettingsIcon />
+        </button>
+      </div>
 
       <span className="dp-toolbar__spacer" />
 

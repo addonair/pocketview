@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { PersistedState, ZoomLevel } from '@shared/protocol';
+import { DEFAULT_SYSTEM_SETTINGS, type PersistedState, type ZoomLevel } from '@shared/protocol';
 import type { Orientation } from '@shared/devices/types';
 
 const KEY_UI = 'pocketView.ui';
@@ -27,6 +27,9 @@ export class StateStore {
       orientation: (stored.orientation as Orientation) ?? base.orientation,
       favorites: stored.favorites ?? [],
       recents: stored.recents ?? [],
+      showFrame: stored.showFrame ?? true,
+      showSafeArea: stored.showSafeArea ?? false,
+      system: { ...DEFAULT_SYSTEM_SETTINGS, ...(stored.system ?? {}) },
     };
   }
 

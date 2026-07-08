@@ -13,12 +13,17 @@ export function screenSize(device: Device, orientation: Orientation): Size {
     : { width, height };
 }
 
-/** Outer frame size (screen + bezel on all sides) in CSS px. */
-export function frameSize(device: Device, orientation: Orientation): Size {
+/**
+ * Outer frame size in CSS px. With `chrome` (the default) this is screen +
+ * bezel on all sides; frameless mode returns the bare screen size so the stage
+ * centers and fits the screen alone.
+ */
+export function frameSize(device: Device, orientation: Orientation, chrome = true): Size {
   const screen = screenSize(device, orientation);
+  const bezel = chrome ? device.bezel : 0;
   return {
-    width: screen.width + device.bezel * 2,
-    height: screen.height + device.bezel * 2,
+    width: screen.width + bezel * 2,
+    height: screen.height + bezel * 2,
   };
 }
 
@@ -32,8 +37,9 @@ export function fitScale(
   orientation: Orientation,
   available: Size,
   margin = 32,
+  chrome = true,
 ): number {
-  const frame = frameSize(device, orientation);
+  const frame = frameSize(device, orientation, chrome);
   const availW = Math.max(1, available.width - margin);
   const availH = Math.max(1, available.height - margin);
   const scale = Math.min(availW / frame.width, availH / frame.height);

@@ -9,6 +9,33 @@ export type ConnectionState = 'searching' | 'connected' | 'disconnected';
 
 export type ZoomLevel = 25 | 50 | 75 | 100 | 125 | 150 | 200 | 'fit';
 
+/** Forced color-scheme applied to the previewed app ('system' = no override). */
+export type ThemeMode = 'system' | 'light' | 'dark';
+
+/** Text direction applied to the previewed app. */
+export type TextDirection = 'ltr' | 'rtl';
+
+/**
+ * "System" simulation applied to the previewed app, injected into the iframe via
+ * the preview proxy. Approximates a device's environment the way
+ * device_preview's system settings do: forced color scheme, text scaling, and
+ * text direction. Effective only for JS-driven theming (see PreviewProxy) — pure
+ * CSS `@media (prefers-color-scheme)` rules cannot be emulated from inside the
+ * page.
+ */
+export interface SystemSettings {
+  theme: ThemeMode;
+  /** Root font-size multiplier (1 = 100%). */
+  textScale: number;
+  direction: TextDirection;
+}
+
+export const DEFAULT_SYSTEM_SETTINGS: SystemSettings = {
+  theme: 'system',
+  textScale: 1,
+  direction: 'ltr',
+};
+
 /** Configuration snapshot pushed from host settings to the webview. */
 export interface PreviewConfig {
   defaultDevice: string;
@@ -25,6 +52,12 @@ export interface PersistedState {
   orientation: Orientation;
   favorites: string[];
   recents: string[];
+  /** Whether the device bezel/chrome is drawn (false = frameless screen). */
+  showFrame: boolean;
+  /** Whether the safe-area guide overlay is shown. */
+  showSafeArea: boolean;
+  /** Simulated system environment applied to the previewed app. */
+  system: SystemSettings;
 }
 
 /** Server status as understood by the webview status bar. */

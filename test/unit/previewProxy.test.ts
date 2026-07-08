@@ -17,6 +17,17 @@ describe('injectRouteScript', () => {
     );
     expect(injectRouteScript('<div>bare</div>')).toMatch(/^<script>/);
   });
+
+  it('injects a syntactically valid agent with both route and settings features', () => {
+    const html = injectRouteScript('<html><head></head><body></body></html>');
+    const body = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+    expect(body).toBeTruthy();
+    // Parse (not execute) the agent so a broken concatenation fails CI instead
+    // of silently breaking every previewed page.
+    expect(() => new Function(body as string)).not.toThrow();
+    expect(html).toContain('pocketViewRoute');
+    expect(html).toContain('pocketViewSettings');
+  });
 });
 
 describe('PreviewProxy (real sockets)', () => {

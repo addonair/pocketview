@@ -3,8 +3,16 @@ import { createRef } from 'react';
 import { render, screen } from '@testing-library/react';
 import { DeviceFrame } from '../../src/webview/components/DeviceFrame';
 import { getDeviceById } from '../../src/shared/devices/registry';
+import { DEFAULT_SYSTEM_SETTINGS } from '../../src/shared/protocol';
 
 const device = getDeviceById('iphone-15-pro')!;
+
+/** Props shared by every render below (frame chrome on, no system overrides). */
+const frameProps = {
+  chrome: true,
+  showSafeArea: false,
+  system: DEFAULT_SYSTEM_SETTINGS,
+} as const;
 
 describe('DeviceFrame', () => {
   it('renders the frame at screen size plus bezel on both axes', () => {
@@ -15,6 +23,7 @@ describe('DeviceFrame', () => {
         orientation="portrait"
         url="http://localhost:5173"
         reloadNonce={0}
+        {...frameProps}
         onLoad={vi.fn()}
         onError={vi.fn()}
       />,
@@ -32,6 +41,7 @@ describe('DeviceFrame', () => {
         orientation="landscape"
         url="http://localhost:5173"
         reloadNonce={0}
+        {...frameProps}
         onLoad={vi.fn()}
         onError={vi.fn()}
       />,
@@ -48,6 +58,7 @@ describe('DeviceFrame', () => {
         orientation="portrait"
         url="http://localhost:5173"
         reloadNonce={0}
+        {...frameProps}
         onLoad={vi.fn()}
         onError={vi.fn()}
       />,
@@ -64,6 +75,7 @@ describe('DeviceFrame', () => {
         orientation="portrait"
         url={null}
         reloadNonce={0}
+        {...frameProps}
         onLoad={vi.fn()}
         onError={vi.fn()}
       />,

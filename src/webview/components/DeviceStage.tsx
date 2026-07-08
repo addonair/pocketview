@@ -1,6 +1,6 @@
 import { useEffect, useState, type RefObject } from 'react';
 import type { Device, Orientation } from '@shared/devices/types';
-import type { ServerStatus, ZoomLevel } from '@shared/protocol';
+import type { ServerStatus, SystemSettings, ZoomLevel } from '@shared/protocol';
 import { useElementSize } from '../hooks/useElementSize';
 import { fitScale, frameSize } from '../deviceGeometry';
 import { DeviceFrame } from './DeviceFrame';
@@ -13,6 +13,9 @@ interface DeviceStageProps {
   loading: boolean;
   error: string | null;
   reloadNonce: number;
+  showFrame: boolean;
+  showSafeArea: boolean;
+  system: SystemSettings;
   screenRef: RefObject<HTMLDivElement>;
   onIframeLoad: () => void;
   onIframeError: () => void;
@@ -34,6 +37,9 @@ export function DeviceStage(props: DeviceStageProps) {
     loading,
     error,
     reloadNonce,
+    showFrame,
+    showSafeArea,
+    system,
     screenRef,
     onIframeLoad,
     onIframeError,
@@ -49,9 +55,10 @@ export function DeviceStage(props: DeviceStageProps) {
     setPinch(1);
   }, [zoom, device.id, orientation]);
 
-  const base = zoom === 'fit' ? fitScale(device, orientation, stageSize) : zoom / 100;
+  const base =
+    zoom === 'fit' ? fitScale(device, orientation, stageSize, 32, showFrame) : zoom / 100;
   const raw = Math.max(0.1, Math.min(base * pinch, 4));
-  const frame = frameSize(device, orientation);
+  const frame = frameSize(device, orientation, showFrame);
   // Snap the scale so the frame maps to a whole number of device pixels.
   // Fractional sizes make the compositor resample the iframe texture, which
   // visibly softens text — especially at fit-to-panel scales.
@@ -101,11 +108,20 @@ export function DeviceStage(props: DeviceStageProps) {
             orientation={orientation}
             url={connected ? (status.previewUrl ?? status.url) : null}
             reloadNonce={reloadNonce}
+            chrome={showFrame}
+            showSafeArea={showSafeArea}
+            system={system}
             onLoad={onIframeLoad}
             onError={onIframeError}
           />
         </div>
       </div>
+
+      {connected && (
+        <div className="dp-scale-badge" aria-hidden>
+          {device.name} · {Math.round(scale * 100)}%
+        </div>
+      )}
 
       {connected && loading && (
         <div className="dp-overlay" role="status" aria-live="polite">
