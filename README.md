@@ -9,7 +9,7 @@ captures pixel-perfect screenshots at real device resolution.
 
 ![PocketView in action](media/demo.gif)
 
-![PocketView](media/screenshot-main.png)
+
 
 ## Why PocketView?
 
@@ -35,6 +35,8 @@ captures pixel-perfect screenshots at real device resolution.
 | 🧭 **Route tracking** | Knows which page you're on inside your app — shown live in the status bar and used as the screenshot default |
 | 📸 **Screenshots** | Captured by an invisible headless Chromium at the device's exact viewport, pixel ratio, and user agent — optionally composited into the device frame |
 | 🎨 **Native feel** | Theme-aware UI, status bar item, keyboard shortcuts, accessible controls |
+
+![PocketView](media/screenshot-main.png)
 
 ## Getting started
 
