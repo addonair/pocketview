@@ -16,7 +16,18 @@ node_modules/**
 !node_modules/playwright-core/browsers.json
 !node_modules/playwright-core/LICENSE
 !node_modules/playwright-core/NOTICE
-!node_modules/playwright-core/lib/**
+# lib/: include only the headless-launch runtime. Exclude vite/ + tools/ (trace-viewer,
+# recorder, dashboard, MCP web apps) and lib/xdg-open (a vendored /bin/sh script) — all
+# unused by chromium.launch() and all scanner bait.
+!node_modules/playwright-core/lib/bootstrap.js
+!node_modules/playwright-core/lib/coreBundle.js
+!node_modules/playwright-core/lib/package.js
+!node_modules/playwright-core/lib/serverRegistry.js
+!node_modules/playwright-core/lib/serverRegistry.js.LICENSE
+!node_modules/playwright-core/lib/utilsBundle.js
+!node_modules/playwright-core/lib/utilsBundle.js.LICENSE
+!node_modules/playwright-core/lib/entry/**
+!node_modules/playwright-core/lib/server/**
 .gitignore
 .eslintrc.cjs
 .prettierrc
