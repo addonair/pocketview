@@ -7,6 +7,8 @@ frame — right next to your code. It finds the dev server that belongs to *your
 workspace* (even with several servers running), reloads as you type, and
 captures pixel-perfect screenshots at real device resolution.
 
+![PocketView in action](media/demo.gif)
+
 ![PocketView](media/screenshot-main.png)
 
 ## Why PocketView?
