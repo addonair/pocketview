@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 .claude/**
+The Gif and Images/**
 src/**
 test/**
 node_modules/**
